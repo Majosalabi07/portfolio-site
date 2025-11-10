@@ -3,10 +3,15 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
+import TeacherDashboard from "@/pages/TeacherDashboard";
+import SchoolDashboard from "@/pages/SchoolDashboard";
 import Jobs from "@/pages/Jobs";
 import JobDetail from "@/pages/JobDetail";
 import Messages from "@/pages/Messages";
@@ -19,11 +24,36 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      
+      {/* Role-specific dashboard routes */}
+      <Route path="/teacher/dashboard">
+        <RoleProtectedRoute allowedRole="teacher">
+          <TeacherDashboard />
+        </RoleProtectedRoute>
+      </Route>
+      <Route path="/school/dashboard">
+        <RoleProtectedRoute allowedRole="school">
+          <SchoolDashboard />
+        </RoleProtectedRoute>
+      </Route>
+      
+      {/* Generic dashboard route - redirects to role-specific dashboard */}
       <Route path="/dashboard" component={Dashboard} />
+      
+      {/* Other protected routes */}
       <Route path="/jobs" component={Jobs} />
       <Route path="/jobs/:id" component={JobDetail} />
-      <Route path="/messages" component={Messages} />
-      <Route path="/profile" component={Profile} />
+      <Route path="/messages">
+        <ProtectedRoute>
+          <Messages />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/profile">
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      </Route>
+      
       <Route component={NotFound} />
     </Switch>
   );
@@ -32,10 +62,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
